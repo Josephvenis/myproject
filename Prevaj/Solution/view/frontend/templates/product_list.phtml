@@ -1,0 +1,40 @@
+<?php
+$categoryId = 2;
+$getProductCollection = $block->getCategoryProduct($categoryId);
+?>
+<div class="category-products">
+    <?php if ($getProductCollection->getSize() > 0): ?>
+        <ul class="products-grid">
+            <?php foreach ($getProductCollection as $product): ?>
+                <li class="item">
+                    <div class="product-item">
+                        <a href="<?php echo $product->getProductUrl(); ?>" class="product-item-photo">
+                            <span class="product-image-container">
+                                <span class="product-image-wrapper">
+                                    <img class="product-image-photo" src="<?php echo $product->getImageUrl(); ?>" alt="<?php echo $block->escapeHtml($product->getName()); ?>" />
+                                </span>
+                            </span>
+                        </a>
+                        <div class="product-item-details">
+                            <strong class="product-item-name">
+                                <a href="<?php echo $product->getProductUrl(); ?>">
+                                    <?php echo $block->escapeHtml($product->getName()); ?>
+                                </a>
+                            </strong>
+                            <div class="price-box">
+                                <span class="regular-price">
+                                    <span class="price">
+                                        $<?php echo $block->escapeHtml($product->getPriceInfo()->getPrice('final_price')->getAmount()->getValue()); ?>
+                                    </span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            <?php endforeach; ?>
+        </ul>
+    <?php else: ?>
+        <p class="empty-category"><?php echo __('No products found.'); ?></p>
+    <?php endif; ?>
+</div>
+

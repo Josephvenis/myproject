@@ -1,0 +1,129 @@
+<style>
+    #popup {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 9999;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    }
+
+    #popupForm {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    #popupForm input {
+        margin-bottom: 10px;
+        padding: 5px;
+    }
+
+    #popupForm button {
+        padding: 10px 20px;
+    }
+
+    #blur-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 9998;
+        backdrop-filter: blur(5px);
+        display: none;
+    }
+</style>
+
+<div id="popup" style="display:none;">
+    <form id="popupForm" action="<?= $block->getFormAction() ?>" method="post">
+        <input type="text" name="custom_field1" placeholder="Name">
+        <input type="text" name="custom_field2" placeholder="Company Name">
+        <button type="submit">Add to Cart</button>
+        <button type="button" id="closeButton">Close</button>
+    </form>
+</div>
+<div id="blur-overlay"></div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+    var addToCartButtons = document.querySelectorAll("button.tocart");
+    var popup = document.getElementById("popup");
+    var blurOverlay = document.getElementById("blur-overlay");
+
+    addToCartButtons.forEach(function(button) {
+        button.addEventListener("click", function(event) {
+            event.preventDefault();
+
+            popup.style.display = "block";
+            blurOverlay.style.display = "block";
+            document.body.style.overflow = "hidden";
+        });
+    });
+
+    function closeForm() {
+        popup.style.display = "none";
+        blurOverlay.style.display = "none";
+        document.body.style.overflow = "auto";
+        popupForm.reset();
+    }
+
+    var popupForm = document.getElementById("popupForm");
+    var closeButton = document.getElementById("closeButton");
+
+    if (popupForm) {
+        popupForm.addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            var customField1 = document.querySelector("#popup input[name='custom_field1']").value;
+            var customField2 = document.querySelector("#popup input[name='custom_field2']").value;
+
+            if (!customField1 || !customField2) {
+                alert("Please fill in the form.");
+                return;
+            }
+
+            var formData = new FormData(popupForm);
+
+            require(['jquery', 'mage/url'], function($, url) {
+                $.ajax({
+                    url: url.build('module/cart/add'),
+                    data: formData,
+                    type: 'post',
+                    dataType: 'json',
+                    cache: false,
+                    contentType: false,
+                    processData: false,
+                    success: function(response) {
+                        if (response.success) {
+                            alert("Product added to cart successfully!");
+                            closeForm();
+                        } else {
+                            alert(response.error);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        alert("Error adding product to cart. Please try again.");
+                    }
+                });
+            });
+        });
+    }
+
+    if (closeButton) {
+        closeButton.addEventListener("click", function() {
+            closeForm();
+        });
+    }
+
+    document.addEventListener("click", function(event) {
+        if (event.target === blurOverlay) {
+            closeForm();
+        }
+    });
+});
+</script>
